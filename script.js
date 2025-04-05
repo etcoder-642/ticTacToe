@@ -119,14 +119,14 @@ const gameModule = (function(){
             if(!(players.length === 2)) return 'Not Enough Players';
             gameStart = true;
         },
-        addValue: function(pos, name){
+        addValue: function(pos){
+            let name = '';
             if(gameStart === false) return "You haven't started the Game";
             else if(gameEnd == true) return "The Game Have ended!"
-            else if(!nameExists(players, name)) return "This player doesn't exist"
             else if(!(typeof pos === 'number') || !possiblePositions.includes(pos)) return 'Invalid Position';
 
-            if(playerStatus === false && name != players[0].name) return 'Not their Turn';
-            else if(playerStatus === true && name != players[1].name) return 'Not their Turn'
+            if(playerStatus === false) name = players[0].name;
+            else if(playerStatus === true) name = players[1].name;
             if(!gameBoard[pos]){
                 gameBoard[pos] = {
                  position: pos,
@@ -177,9 +177,40 @@ document.addEventListener('click', (e)=>{
             gameModule.createPlayer(player2Input.value);
             gameModule.startGame();
             document.querySelector('.hiddenBox').style.display = 'none';
+            document.querySelector('.btn').style.display = 'none';
             e.preventDefault();
+            console.log(gameModule.getPlayers());
+        }
+    }else if(e.target.className === 'box'){
+        let id = parseInt(e.target.id);
+        let value = gameModule.addValue(id);
+
+        if(value === "You haven't started the Game"){
+            document.querySelector('.hiddenBox').style.display = 'flex';
+            document.querySelector('.hiddenBox').innerHTML = `
+            <header>OOF!</header>
+            <p>You didn't even started the game man</p>
+            <button>Okay I will start</button>
+            `;
+            return;
+        }
+
+        if(gameModule.boardStat()[id].valueAdded){
+            e.target.innerHTML = '\u2715'
+        }else{
+            e.target.innerHTML = '\u25EF'
+        }
+
+        if(value){
+            if(value.includes('Won')){
+                document.querySelector('.hiddenBox').style.display = 'flex';
+                document.querySelector('.hiddenBox').innerHTML = `
+                <header>CONGRATULATIONS</header>
+                <p>${value}</p>
+                `;
+                return;    
+            }
         }
     }
 })
 
-console.log(gameModule.getPlayers());
