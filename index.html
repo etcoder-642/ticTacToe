@@ -3,9 +3,30 @@
  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="script.js" defer></script>
+    <link rel="stylesheet" href="style.css">
     <title>Tic Tac Toe</title>
  </head>
  <body>
-    
+    <div class="container">
+       <div class="main">
+         <div class="box"></div>
+         <div class="box"></div>
+         <div class="box"></div>
+         <div class="box"></div>
+         <div class="box"></div>
+         <div class="box"></div>
+         <div class="box"></div>
+         <div class="box"></div>
+         <div class="box"></div>
+       </div>
+       <button class="btn">Start Game</button>
+    </div>
+    <form class="hiddenBox">
+      <header>Enter Your Player's Name</header>
+      <input type="text" id="player1" placeholder="Player 1" required>
+      <input type="text" id="player2" placeholder="Player 2" required>
+      <button type="submit" class="submit">Confirm</button>
+    </form>
  </body>
  </html>
