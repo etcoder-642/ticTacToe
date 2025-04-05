@@ -8,10 +8,6 @@ const gameModule = (function(){
     
     const possiblePositions = [11, 12, 13, 21, 22, 23, 31, 32, 33];
 
-    function nameExists(arr, searchName) {
-        return arr.some(obj => obj.name && obj.name.includes(searchName));
-      }
-
     function checkWin(mainObj, mainArr){
         let obj = {
             filterObj: function(obj, arr){
@@ -105,7 +101,10 @@ const gameModule = (function(){
                 }else if(obj.existenceChecker(obj.filterObj(mainObj, mainArr)[1], [13, 22, 31])){
                     gameEnd = !gameEnd;
                     return `${mainArr[1].name} Won`;
-                }        
+                }else if(Object.keys(mainObj).length === 9){
+                    gameEnd = !gameEnd;
+                    return `A draw`;
+                }
             }
         }
     }  
@@ -151,23 +150,10 @@ const gameModule = (function(){
     }    
 })();
 
-
-// gameModule.createPlayer('nati');
-// gameModule.createPlayer('sami');
-// gameModule.startGame();
-
-// gameModule.addValue(13, 'nati');
-// gameModule.addValue(21, 'sami');
-// gameModule.addValue(22,'nati');
-// gameModule.addValue(32, 'sami');
-// console.log(gameModule.addValue(31, 'nati'));
-
-
-// console.log(gameModule.boardStat());
-
 document.addEventListener('click', (e)=>{
     if(e.target.className.includes('btn')){
         document.querySelector('.hiddenBox').style.display = 'flex';
+        document.querySelector('.overlay').style.display = 'block';
     }else if(e.target.className.includes('submit')){
         let player1Input = document.querySelector('#player1');
         let player2Input = document.querySelector('#player2');
@@ -177,23 +163,15 @@ document.addEventListener('click', (e)=>{
             gameModule.createPlayer(player2Input.value);
             gameModule.startGame();
             document.querySelector('.hiddenBox').style.display = 'none';
+            document.querySelector('.main').style.display = 'grid';
             document.querySelector('.btn').style.display = 'none';
+            document.querySelector('.overlay').style.display = 'none';
             e.preventDefault();
             console.log(gameModule.getPlayers());
         }
     }else if(e.target.className === 'box'){
         let id = parseInt(e.target.id);
         let value = gameModule.addValue(id);
-
-        if(value === "You haven't started the Game"){
-            document.querySelector('.hiddenBox').style.display = 'flex';
-            document.querySelector('.hiddenBox').innerHTML = `
-            <header>OOF!</header>
-            <p>You didn't even started the game man</p>
-            <button>Okay I will start</button>
-            `;
-            return;
-        }
 
         if(gameModule.boardStat()[id].valueAdded){
             e.target.innerHTML = '\u2715'
@@ -203,10 +181,21 @@ document.addEventListener('click', (e)=>{
 
         if(value){
             if(value.includes('Won')){
+                document.querySelector('.overlay').style.display = 'block';
                 document.querySelector('.hiddenBox').style.display = 'flex';
                 document.querySelector('.hiddenBox').innerHTML = `
                 <header>CONGRATULATIONS</header>
                 <p>${value}</p>
+                <button>Replay</button>
+                `;
+                return;    
+            }else if(value.includes('draw')){
+                document.querySelector('.overlay').style.display = 'block';
+                document.querySelector('.hiddenBox').style.display = 'flex';
+                document.querySelector('.hiddenBox').innerHTML = `
+                <header>OOF!</header>
+                <p>This Game is Draw</p>
+                <button>Replay</button>
                 `;
                 return;    
             }
