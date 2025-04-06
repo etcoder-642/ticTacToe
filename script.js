@@ -146,47 +146,102 @@ const gameModule = (function(){
         },
         boardStat: function(){
             return gameBoard;
+        },
+        resetGame: function(){
+            gameBoard = {};
+            gameEnd = false;
         }
     }    
 })();
 
-document.addEventListener('click', (e)=>{
+const simpleCounter = function(num){
+    let firstCounter = 0;
+    let secondCounter = 0
+    return {
+        incrementFirst: function(){
+            if(firstCounter + secondCounter >= num) return 'Enough';
+            return firstCounter++;
+        },
+        incrementSecond: function(){
+            if(firstCounter + secondCounter >= num) return 'Enough';
+            return secondCounter++;
+        },
+        getValueFirst: function(){
+            return firstCounter;
+        },
+        getValueSecond: function(){
+            return secondCounter;
+        }
+    }
+}
+
+document.addEventListener('click', (e)=>{    
+    let playerPoint = '';
+    let rounds = ''
+
     if(e.target.className.includes('btn')){
         document.querySelector('.hiddenBox').style.display = 'flex';
         document.querySelector('.overlay').style.display = 'block';
     }else if(e.target.className.includes('submit')){
         let player1Input = document.querySelector('#player1');
         let player2Input = document.querySelector('#player2');
+        rounds = document.querySelector('#rounds');
 
-        if(player1Input.checkValidity() && player2Input.checkValidity()){
+        if(player1Input.checkValidity() && player2Input.checkValidity() && rounds.checkValidity()){
+            e.preventDefault();
+            playerPoint = simpleCounter(parseInt(rounds.value));
+
             gameModule.createPlayer(player1Input.value);
             gameModule.createPlayer(player2Input.value);
             gameModule.startGame();
+
+            let table = document.querySelector('#myTable');
+
             document.querySelector('.hiddenBox').style.display = 'none';
             document.querySelector('.main').style.display = 'grid';
             document.querySelector('.btn').style.display = 'none';
             document.querySelector('.overlay').style.display = 'none';
-            e.preventDefault();
-            console.log(gameModule.getPlayers());
+
+            table.style.display = 'table';
+            table.innerHTML = `
+            <tr>
+              <th>${gameModule.getPlayers()[0].name}</th>
+              <th>${gameModule.getPlayers()[1].name}</th>
+            </tr>
+            <tr>
+               <td class='pointPlayer1'>${playerPoint.getValueFirst()}</td>
+               <td class='pointPlayer2'>${playerPoint.getValueSecond()}</td>
+             </tr>
+           `
         }
     }else if(e.target.className === 'box'){
         let id = parseInt(e.target.id);
         let value = gameModule.addValue(id);
 
         if(gameModule.boardStat()[id].valueAdded){
-            e.target.innerHTML = '\u2715'
-        }else{
-            e.target.innerHTML = '\u25EF'
-        }
+                e.target.innerHTML = '\u2715'
+            }else{
+                e.target.innerHTML = '\u25EF'
+        }    
 
         if(value){
             if(value.includes('Won')){
+                playerPoint = simpleCounter(parseInt(rounds.value));
+                if(value === `${gameModule.getPlayers()[0].name} Won`){
+                    playerPoint.incrementFirst();
+                    console.log(playerPoint.getValueFirst());
+                }else {
+                    playerPoint.incrementSecond();
+                }
+                document.querySelector('.pointPlayer1').textContent = playerPoint.getValueFirst();
+                document.querySelector('.pointPlayer2').textContent = playerPoint.getValueSecond();
+
                 document.querySelector('.overlay').style.display = 'block';
                 document.querySelector('.hiddenBox').style.display = 'flex';
                 document.querySelector('.hiddenBox').innerHTML = `
                 <header>CONGRATULATIONS</header>
                 <p>${value}</p>
-                <button>Replay</button>
+                <button class="replay">Replay</button>
                 `;
                 return;    
             }else if(value.includes('draw')){
@@ -195,11 +250,22 @@ document.addEventListener('click', (e)=>{
                 document.querySelector('.hiddenBox').innerHTML = `
                 <header>OOF!</header>
                 <p>This Game is Draw</p>
-                <button>Replay</button>
+                <button class="replay">Replay</button>
                 `;
                 return;    
             }
         }
+    }else if(e.target.className === 'replay'){
+        e.preventDefault();
+        document.querySelector('.overlay').style.display = 'none';
+        document.querySelector('.hiddenBox').style.display = 'none';
+        gameModule.resetGame();
+        let box = document.querySelectorAll('.box');
+        box.forEach(element => {
+            element.textContent = ''
+        });
+        console.log(gameModule.getPlayers());
+        gameModule.startGame();
     }
 })
 

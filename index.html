@@ -10,6 +10,17 @@
  <body>
    <div class="overlay"></div>
     <div class="container">
+      <header>Tic Tac Toe</header>
+      <table id="myTable">
+        <tr>
+          <th>Player1</th>
+          <th>Player2</th>
+      </tr>
+        <tr>
+          <td></td>
+          <td></td>
+        </tr>
+      </table>
        <div class="main">
          <div id="11" class="box"></div>
          <div id="12" class="box"></div>
@@ -27,6 +38,7 @@
       <header>Enter Your Player's Name</header>
       <input type="text" id="player1" placeholder="Player 1" required>
       <input type="text" id="player2" placeholder="Player 2" required>
+      <input type="number" id="rounds" placeholder="How many rounds to play?" required>
       <button type="submit" class="submit">Confirm</button>
     </form>
  </body>
