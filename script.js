@@ -154,16 +154,16 @@ const gameModule = (function(){
     }    
 })();
 
-const simpleCounter = function(num){
+const playerPoint = (function(){
     let firstCounter = 0;
     let secondCounter = 0
     return {
-        incrementFirst: function(){
-            if(firstCounter + secondCounter >= num) return 'Enough';
+        incrementFirst: function(num){
+            if((firstCounter + secondCounter) >= num) return 'Enough';
             return firstCounter++;
         },
-        incrementSecond: function(){
-            if(firstCounter + secondCounter >= num) return 'Enough';
+        incrementSecond: function(num){
+            if((firstCounter + secondCounter) >= num) return 'Enough';
             return secondCounter++;
         },
         getValueFirst: function(){
@@ -173,11 +173,10 @@ const simpleCounter = function(num){
             return secondCounter;
         }
     }
-}
+})()
+let roundValue = ''
 
 document.addEventListener('click', (e)=>{    
-    let playerPoint = '';
-    let rounds = ''
 
     if(e.target.className.includes('btn')){
         document.querySelector('.hiddenBox').style.display = 'flex';
@@ -186,10 +185,11 @@ document.addEventListener('click', (e)=>{
         let player1Input = document.querySelector('#player1');
         let player2Input = document.querySelector('#player2');
         rounds = document.querySelector('#rounds');
+        roundValue = rounds.value;
 
         if(player1Input.checkValidity() && player2Input.checkValidity() && rounds.checkValidity()){
             e.preventDefault();
-            playerPoint = simpleCounter(parseInt(rounds.value));
+            console.log(roundValue);
 
             gameModule.createPlayer(player1Input.value);
             gameModule.createPlayer(player2Input.value);
@@ -213,6 +213,7 @@ document.addEventListener('click', (e)=>{
                <td class='pointPlayer2'>${playerPoint.getValueSecond()}</td>
              </tr>
            `
+           return playerPoint;
         }
     }else if(e.target.className === 'box'){
         let id = parseInt(e.target.id);
@@ -226,12 +227,30 @@ document.addEventListener('click', (e)=>{
 
         if(value){
             if(value.includes('Won')){
-                playerPoint = simpleCounter(parseInt(rounds.value));
                 if(value === `${gameModule.getPlayers()[0].name} Won`){
-                    playerPoint.incrementFirst();
+                    if(playerPoint.incrementFirst(roundValue) === 'Enough') {
+                        document.querySelector('.overlay').style.display = 'block';
+                        document.querySelector('.hiddenBox').style.display = 'flex';
+                        document.querySelector('.hiddenBox').innerHTML = `
+                        <header>CONGRATULATIONS</header>
+                        <p>${gameModule.getPlayers()[0].name} Won the Game!</p>
+                        <button class="restart">Restart</button>                        
+                        <button class="reset">Reset</button>
+                        `;        
+                    }
                     console.log(playerPoint.getValueFirst());
                 }else {
-                    playerPoint.incrementSecond();
+                    if(playerPoint.incrementFirst(roundValue) === 'Enough') {
+                        document.querySelector('.overlay').style.display = 'block';
+                        document.querySelector('.hiddenBox').style.display = 'flex';
+                        document.querySelector('.hiddenBox').innerHTML = `
+                        <header>CONGRATULATIONS</header>
+                        <p>${gameModule.getPlayers()[0].name} Won the Game!</p>
+                        <button class="restart">Restart</button>                        
+                        <button class="reset">Reset</button>
+                        `;        
+                    }
+                    console.log(playerPoint.getValueSecond());
                 }
                 document.querySelector('.pointPlayer1').textContent = playerPoint.getValueFirst();
                 document.querySelector('.pointPlayer2').textContent = playerPoint.getValueSecond();
