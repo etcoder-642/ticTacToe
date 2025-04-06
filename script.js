@@ -159,11 +159,11 @@ const playerPoint = (function(){
     let secondCounter = 0
     return {
         incrementFirst: function(num){
-            if((firstCounter + secondCounter) >= num) return 'Enough';
+            if((firstCounter + secondCounter) >= num-1) return 'Enough';
             return firstCounter++;
         },
         incrementSecond: function(num){
-            if((firstCounter + secondCounter) >= num) return 'Enough';
+            if((firstCounter + secondCounter) >= num-1) return 'Enough';
             return secondCounter++;
         },
         getValueFirst: function(){
@@ -171,36 +171,82 @@ const playerPoint = (function(){
         },
         getValueSecond: function(){
             return secondCounter;
+        },
+        reset: function(){
+            firstCounter = 0;
+            secondCounter = 0;
         }
     }
 })()
-let roundValue = ''
+
+const displayController = (function(){
+    return {
+        popUpMode: function(){
+            document.querySelector('.hiddenBox').style.display = 'flex';
+            document.querySelector('.overlay').style.display = 'block';    
+        },
+        normalMode: function(){
+            document.querySelector('.hiddenBox').style.display = 'none';
+            document.querySelector('.overlay').style.display = 'none';
+            document.querySelector('.main').style.display = 'grid';
+            document.querySelector('.btn').style.display = 'none';
+        },
+        resetMode: function(){
+            document.querySelector('.hiddenBox').style.display = 'none';
+            document.querySelector('.overlay').style.display = 'none';
+            gameModule.resetGame();
+            let box = document.querySelectorAll('.box');
+            box.forEach(element => {
+                element.textContent = ''
+            });
+            gameModule.startGame();          
+        },
+        drawMode: function(){
+            displayController.displayHidden = true;
+            document.querySelector('.hiddenBox').innerHTML = `
+            <header>OOH!</header>
+            <p>This Game was a Draw!</p>
+            <button class="restart">Restart</button>                        
+            <button class="reset">Reset</button>
+            `;
+            return;            
+        },
+        winnerMode: function(){
+            displayController.displayHidden = true;
+            document.querySelector('.hiddenBox').innerHTML = `
+            <header>CONGRATULATIONS</header>
+            <p>${displayController.winner} Won the Game!</p>
+            <button class="restart">Restart</button>                        
+            <button class="reset">Reset</button>
+            `;
+        },
+        displayHidden: false,
+        roundValue: "",
+        winner: ''
+    }
+})()
 
 document.addEventListener('click', (e)=>{    
 
     if(e.target.className.includes('btn')){
-        document.querySelector('.hiddenBox').style.display = 'flex';
-        document.querySelector('.overlay').style.display = 'block';
+        displayController.popUpMode();
     }else if(e.target.className.includes('submit')){
         let player1Input = document.querySelector('#player1');
         let player2Input = document.querySelector('#player2');
         rounds = document.querySelector('#rounds');
-        roundValue = rounds.value;
+        displayController.roundValue = rounds.value;
 
         if(player1Input.checkValidity() && player2Input.checkValidity() && rounds.checkValidity()){
             e.preventDefault();
-            console.log(roundValue);
+            console.log(displayController.roundValue);
 
             gameModule.createPlayer(player1Input.value);
             gameModule.createPlayer(player2Input.value);
             gameModule.startGame();
 
             let table = document.querySelector('#myTable');
+            displayController.normalMode();
 
-            document.querySelector('.hiddenBox').style.display = 'none';
-            document.querySelector('.main').style.display = 'grid';
-            document.querySelector('.btn').style.display = 'none';
-            document.querySelector('.overlay').style.display = 'none';
 
             table.style.display = 'table';
             table.innerHTML = `
@@ -228,63 +274,73 @@ document.addEventListener('click', (e)=>{
         if(value){
             if(value.includes('Won')){
                 if(value === `${gameModule.getPlayers()[0].name} Won`){
-                    if(playerPoint.incrementFirst(roundValue) === 'Enough') {
-                        document.querySelector('.overlay').style.display = 'block';
-                        document.querySelector('.hiddenBox').style.display = 'flex';
-                        document.querySelector('.hiddenBox').innerHTML = `
-                        <header>CONGRATULATIONS</header>
-                        <p>${gameModule.getPlayers()[0].name} Won the Game!</p>
-                        <button class="restart">Restart</button>                        
-                        <button class="reset">Reset</button>
-                        `;        
+                    // console.log("Here's the part that I want");
+                    // console.log(playerPoint.incrementFirst(displayController.roundValue));
+                    if(playerPoint.incrementFirst(displayController.roundValue) === 'Enough') {
+                        if(playerPoint.getValueFirst > playerPoint.getValueSecond){
+                            displayController.winner = gameModule.getPlayers()[0].name;
+                        }else if(playerPoint.getValueFirst > playerPoint.getValueSecond){
+                            displayController.winner = gameModule.getPlayers()[1].name;
+                        }else {
+                            displayController.popUpMode();
+                            displayController.drawMode();
+                        }
+                        displayController.popUpMode();
+                        displayController.winnerMode();
                     }
                     console.log(playerPoint.getValueFirst());
                 }else {
-                    if(playerPoint.incrementFirst(roundValue) === 'Enough') {
-                        document.querySelector('.overlay').style.display = 'block';
-                        document.querySelector('.hiddenBox').style.display = 'flex';
-                        document.querySelector('.hiddenBox').innerHTML = `
-                        <header>CONGRATULATIONS</header>
-                        <p>${gameModule.getPlayers()[0].name} Won the Game!</p>
-                        <button class="restart">Restart</button>                        
-                        <button class="reset">Reset</button>
-                        `;        
+                    if(playerPoint.incrementSecond(displayController.roundValue) === 'Enough') {
+                        if(playerPoint.getValueFirst > playerPoint.getValueSecond){
+                            displayController.winner = gameModule.getPlayers()[0].name;
+                        }else if(playerPoint.getValueFirst > playerPoint.getValueSecond){
+                            displayController.winner = gameModule.getPlayers()[1].name;
+                        }else {
+                            displayController.popUpMode();
+                            displayController.drawMode();
+                        }
+                        displayController.popUpMode();
+                        displayController.winnerMode();
                     }
                     console.log(playerPoint.getValueSecond());
                 }
-                document.querySelector('.pointPlayer1').textContent = playerPoint.getValueFirst();
-                document.querySelector('.pointPlayer2').textContent = playerPoint.getValueSecond();
 
-                document.querySelector('.overlay').style.display = 'block';
-                document.querySelector('.hiddenBox').style.display = 'flex';
-                document.querySelector('.hiddenBox').innerHTML = `
-                <header>CONGRATULATIONS</header>
-                <p>${value}</p>
-                <button class="replay">Replay</button>
-                `;
+                if(displayController.displayHidden === false){
+                    document.querySelector('.pointPlayer1').textContent = playerPoint.getValueFirst();
+                    document.querySelector('.pointPlayer2').textContent = playerPoint.getValueSecond();
+
+                    displayController.popUpMode();
+                    document.querySelector('.hiddenBox').innerHTML = `
+                    <header>BRAVO!</header>
+                    <p>${value}</p>
+                    `;       
+                    
+                    setTimeout(() => {
+                        displayController.resetMode();
+                    }, 2500);
+                }
                 return;    
             }else if(value.includes('draw')){
-                document.querySelector('.overlay').style.display = 'block';
-                document.querySelector('.hiddenBox').style.display = 'flex';
+                displayController.popUpMode();
                 document.querySelector('.hiddenBox').innerHTML = `
                 <header>OOF!</header>
                 <p>This Game is Draw</p>
-                <button class="replay">Replay</button>
                 `;
+
+                setTimeout(() => {
+                    displayController.resetMode();
+                }, 2500);
                 return;    
             }
         }
-    }else if(e.target.className === 'replay'){
+    }else if(e.target.className === 'restart'){
         e.preventDefault();
-        document.querySelector('.overlay').style.display = 'none';
-        document.querySelector('.hiddenBox').style.display = 'none';
-        gameModule.resetGame();
-        let box = document.querySelectorAll('.box');
-        box.forEach(element => {
-            element.textContent = ''
-        });
-        console.log(gameModule.getPlayers());
-        gameModule.startGame();
+        displayController.resetMode();
+
+        displayController.displayHidden = false;
+        playerPoint.reset();
+        document.querySelector('.pointPlayer1').textContent = playerPoint.getValueFirst();
+        document.querySelector('.pointPlayer2').textContent = playerPoint.getValueSecond();
     }
 })
 
