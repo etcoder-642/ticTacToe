@@ -1,6 +1,7 @@
 :root {
     --gradient-orange: linear-gradient(to right, rgba(210, 105, 30, 1), rgba(220, 20, 60, 1)); 
     --gradient-orange-hover: linear-gradient(to right, rgba(210, 105, 30, 0.8), rgba(220, 20, 60, 0.8)); 
+    --gradient-slight-orange: linear-gradient(to right, rgb(230, 162, 114), rgb(219, 108, 130)); 
     --gradient-blue: linear-gradient(to right, rgba(58, 58, 153, 1), rgba(2, 178, 236, 1));
     --gradient-blue-hover: linear-gradient(to right, rgba(58, 58, 153, 0.8), rgba(2, 178, 236, 0.8));
     --gradient-box: linear-gradient(to right, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.05));
@@ -15,6 +16,7 @@
 body {
     box-sizing: border-box;
     font-family: Poppins;
+    background-color: bisque;
 }
 
 
@@ -29,6 +31,18 @@ body {
 .container > header {
     margin: 0px auto;
     font-size: 64px;
+}
+
+
+.convo {
+    display: none;
+    margin: 0px auto;
+    font-size: 24px;
+    background: var(--gradient-slight-orange);
+    padding: 8px 32px;
+    border-radius: 28px;
+    color: white;
+    box-shadow: 0 0 12px 1px orange;
 }
 
 .main {

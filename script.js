@@ -159,12 +159,12 @@ const playerPoint = (function(){
     let secondCounter = 0
     return {
         incrementFirst: function(num){
-            if((firstCounter + secondCounter) >= num-1) return 'Enough';
-            return firstCounter++;
+            ++firstCounter;
+            if(((firstCounter) + secondCounter) >= num) return 'Enough';
         },
         incrementSecond: function(num){
-            if((firstCounter + secondCounter) >= num-1) return 'Enough';
-            return secondCounter++;
+            ++secondCounter;
+            if((firstCounter + (secondCounter)) >= num) return 'Enough';
         },
         getValueFirst: function(){
             return firstCounter;
@@ -187,6 +187,7 @@ const displayController = (function(){
         },
         normalMode: function(){
             document.querySelector('.hiddenBox').style.display = 'none';
+            document.querySelector('.convo').style.display = 'block';
             document.querySelector('.overlay').style.display = 'none';
             document.querySelector('.main').style.display = 'grid';
             document.querySelector('.btn').style.display = 'none';
@@ -209,10 +210,29 @@ const displayController = (function(){
             <button class="restart">Restart</button>                        
             <button class="reset">Reset</button>
             `;
-            return;            
+            return;
         },
         winnerMode: function(){
             displayController.displayHidden = true;
+        },
+        pointDisplayer: function(){
+            document.querySelector('.pointPlayer1').textContent = playerPoint.getValueFirst();
+            document.querySelector('.pointPlayer2').textContent = playerPoint.getValueSecond();
+        },
+        finalWinnerMode: function(){
+            if(playerPoint.getValueFirst() > playerPoint.getValueSecond()){
+                displayController.winner = gameModule.getPlayers()[0].name;
+                console.log(displayController.winner)
+            }else if(playerPoint.getValueFirst() < playerPoint.getValueSecond()){
+                displayController.winner = gameModule.getPlayers()[1].name;
+                console.log(displayController.winner)
+            }else {
+                displayController.popUpMode();
+                displayController.drawMode();
+                return;
+            }
+            displayController.popUpMode();
+            displayController.winnerMode();
             document.querySelector('.hiddenBox').innerHTML = `
             <header>CONGRATULATIONS</header>
             <p>${displayController.winner} Won the Game!</p>
@@ -220,6 +240,18 @@ const displayController = (function(){
             <button class="reset">Reset</button>
             `;
         },
+        playerTurn: function(boolean, element){
+            if(element.innerHTML === ''){
+                displayController.currentPlayer = !displayController.currentPlayer;
+                if(boolean){
+                    document.querySelector('.convo').textContent = `${gameModule.getPlayers()[0].name}'s turn`;
+                }else {
+                    document.querySelector('.convo').textContent = `${gameModule.getPlayers()[1].name}'s turn`;
+                }
+                return;
+            }
+        },
+        currentPlayer: false,
         displayHidden: false,
         roundValue: "",
         winner: ''
@@ -231,6 +263,7 @@ document.addEventListener('click', (e)=>{
     if(e.target.className.includes('btn')){
         displayController.popUpMode();
     }else if(e.target.className.includes('submit')){
+        e.preventDefault();
         let player1Input = document.querySelector('#player1');
         let player2Input = document.querySelector('#player2');
         rounds = document.querySelector('#rounds');
@@ -238,12 +271,12 @@ document.addEventListener('click', (e)=>{
 
         if(player1Input.checkValidity() && player2Input.checkValidity() && rounds.checkValidity()){
             e.preventDefault();
-            console.log(displayController.roundValue);
 
             gameModule.createPlayer(player1Input.value);
             gameModule.createPlayer(player2Input.value);
             gameModule.startGame();
 
+            document.querySelector('.convo').textContent = `${gameModule.getPlayers()[0].name}'s turn`;
             let table = document.querySelector('#myTable');
             displayController.normalMode();
 
@@ -262,52 +295,33 @@ document.addEventListener('click', (e)=>{
            return playerPoint;
         }
     }else if(e.target.className === 'box'){
+        displayController.playerTurn(displayController.currentPlayer, e.target);
         let id = parseInt(e.target.id);
         let value = gameModule.addValue(id);
 
         if(gameModule.boardStat()[id].valueAdded){
-                e.target.innerHTML = '\u2715'
-            }else{
+            e.target.innerHTML = '\u2715'
+        }else{
                 e.target.innerHTML = '\u25EF'
         }    
 
         if(value){
             if(value.includes('Won')){
+                let playerPoint1 = '';
+                let playerPoint2 = '';
                 if(value === `${gameModule.getPlayers()[0].name} Won`){
-                    // console.log("Here's the part that I want");
-                    // console.log(playerPoint.incrementFirst(displayController.roundValue));
-                    if(playerPoint.incrementFirst(displayController.roundValue) === 'Enough') {
-                        if(playerPoint.getValueFirst > playerPoint.getValueSecond){
-                            displayController.winner = gameModule.getPlayers()[0].name;
-                        }else if(playerPoint.getValueFirst > playerPoint.getValueSecond){
-                            displayController.winner = gameModule.getPlayers()[1].name;
-                        }else {
-                            displayController.popUpMode();
-                            displayController.drawMode();
-                        }
-                        displayController.popUpMode();
-                        displayController.winnerMode();
-                    }
-                    console.log(playerPoint.getValueFirst());
+                    playerPoint1 = playerPoint.incrementFirst(displayController.roundValue);
                 }else {
-                    if(playerPoint.incrementSecond(displayController.roundValue) === 'Enough') {
-                        if(playerPoint.getValueFirst > playerPoint.getValueSecond){
-                            displayController.winner = gameModule.getPlayers()[0].name;
-                        }else if(playerPoint.getValueFirst > playerPoint.getValueSecond){
-                            displayController.winner = gameModule.getPlayers()[1].name;
-                        }else {
-                            displayController.popUpMode();
-                            displayController.drawMode();
-                        }
-                        displayController.popUpMode();
-                        displayController.winnerMode();
-                    }
-                    console.log(playerPoint.getValueSecond());
+                    playerPoint2 = playerPoint.incrementSecond(displayController.roundValue);
+                }
+
+                if(playerPoint2 === 'Enough' || playerPoint1 === 'Enough'){
+                    displayController.finalWinnerMode();
+                    return;
                 }
 
                 if(displayController.displayHidden === false){
-                    document.querySelector('.pointPlayer1').textContent = playerPoint.getValueFirst();
-                    document.querySelector('.pointPlayer2').textContent = playerPoint.getValueSecond();
+                    displayController.pointDisplayer();
 
                     displayController.popUpMode();
                     document.querySelector('.hiddenBox').innerHTML = `
@@ -319,7 +333,6 @@ document.addEventListener('click', (e)=>{
                         displayController.resetMode();
                     }, 2500);
                 }
-                return;    
             }else if(value.includes('draw')){
                 displayController.popUpMode();
                 document.querySelector('.hiddenBox').innerHTML = `
@@ -330,8 +343,8 @@ document.addEventListener('click', (e)=>{
                 setTimeout(() => {
                     displayController.resetMode();
                 }, 2500);
-                return;    
             }
+
         }
     }else if(e.target.className === 'restart'){
         e.preventDefault();
@@ -339,8 +352,7 @@ document.addEventListener('click', (e)=>{
 
         displayController.displayHidden = false;
         playerPoint.reset();
-        document.querySelector('.pointPlayer1').textContent = playerPoint.getValueFirst();
-        document.querySelector('.pointPlayer2').textContent = playerPoint.getValueSecond();
+        displayController.pointDisplayer();
     }
 })
 
